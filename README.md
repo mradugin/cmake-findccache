@@ -1,16 +1,18 @@
 # About
 
-This CMake module finds the `ccache` executable on the system and routes 
-compilation and linking calls via `ccache` executable to speed up recompilation.
+This CMake module finds the `ccache` executable on the system and routes compilation and linking calls via `ccache` executable to speed up recompilation. More about [ccache](https://ccache.dev).
 
 Following CMake generators are supported:
-- **Xcode**
-- **Visual Studio**
-- **Ninja** and **Unix Makefiles**
+- **Xcode**;
+- **Ninja** and **Unix Makefiles**;
+- **Visual Studio** (MSVC and MSBuild), requires ccache version 4.6 or newer, use of `CMAKE_MSVC_DEBUG_INFORMATION_FORMAT` required CMake version 3.25 or newer.
 
-More about [ccache](https://ccache.dev)
+By default this module will look only for ``ccache`` program, to try [alternative compiler cache programs](#alternative-compile-cache-tools) (not tested), force override ``CCACHE_PROGRAMS`` cache variable. 
+For example, to look for cache programs in the following order of preference `sccache`, `buildcache`, `ccache`, add to `CMakeLists.txt`:
 
-`Findccache.cmake` can be modified to support [other compiler cache tools](#alternative-compile-cache-tools), see [Further Work](#further-work) section.
+```cmake
+set(CCACHE_PROGRAMS "sccache;buildcache;ccache" CACHE STRING _ FORCE)
+````
 
 # Usage
 
@@ -56,12 +58,6 @@ For the complete example see [CMakeLists.txt](example/CMakeLists.txt)
 ## On Ubuntu
 
 - `sudo apt install ccache`
-
-# Further Work
-
-`Findccache.cmake` can be extended to find and use other compiler cache programs, like, `sccache` or `buildcache` by adding those to `find_program()` call as shown below:  
-
-`find_program(CCACHE_PROGRAM NAMES ccache sccache buildcache DOC "compiler cache executable")`
 
 # Other Resources
 

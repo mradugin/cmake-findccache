@@ -33,6 +33,12 @@ to be unreliable in some cases::
 
   project(...)
 
+This module will look only for ``ccache`` program by default, force override 
+``CCACHE_PROGRAMS`` cache variable to look for for alternative compiler
+cache programs::
+
+  set(CCACHE_PROGRAMS "sccache;buildcache;ccache" CACHE STRING _ FORCE)
+
 Adding following line after project() will enable use of compiler cache::
 
   find_package(ccache REQUIRED)
@@ -47,7 +53,9 @@ The following variables are provided to indicate compiler cache support:
 
 #]=======================================================================]
 
-find_program(CCACHE_PROGRAM NAMES ccache DOC "compiler cache executable")
+set(CCACHE_PROGRAMS "ccache" CACHE STRING "eligible compiler cache programs to look for")
+
+find_program(CCACHE_PROGRAM NAMES ${CCACHE_PROGRAMS} DOC "compiler cache executable")
 
 # handle the QUIETLY and REQUIRED arguments and set xxx_FOUND to TRUE if
 # all listed variables are TRUE
