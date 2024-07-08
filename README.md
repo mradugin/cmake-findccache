@@ -10,7 +10,7 @@ Following CMake generators are supported:
 
 More about [ccache](https://ccache.dev)
 
-`Findccache.cmake` can be easily modified to support [other compiler cache tools](#alternative-compile-cache-tools)
+`Findccache.cmake` can be modified to support [other compiler cache tools](#alternative-compile-cache-tools), see [Further Work](#further-work) section.
 
 # Usage
 
@@ -59,7 +59,7 @@ For the complete example see [CMakeLists.txt](example/CMakeLists.txt)
 
 # Further Work
 
-`Findccache.cmake` can be easily extended to find and use other compiler cache programs, like, `sccache` or `buildcache` by adding these to `find_program()` call as shown below:  
+`Findccache.cmake` can be extended to find and use other compiler cache programs, like, `sccache` or `buildcache` by adding those to `find_program()` call as shown below:  
 
 `find_program(CCACHE_PROGRAM NAMES ccache sccache buildcache DOC "compiler cache executable")`
 
