@@ -50,7 +50,7 @@ jobs:
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
-        restore: false
+        restore: true
   
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -66,10 +66,9 @@ jobs:
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -S ${{ steps.strings.outputs.source-dir }}
-
-      # -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-      # -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
 
     - name: ccache show stats before
       run: ccache --show-stats
