@@ -77,7 +77,7 @@ jobs:
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
-        cmake -LAH -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake -LAH -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ steps.strings.outputs.source-dir }}
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
