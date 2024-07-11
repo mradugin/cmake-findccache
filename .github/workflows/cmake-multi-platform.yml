@@ -48,6 +48,8 @@ jobs:
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
+      wuth:
+        restore: false
   
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -67,10 +69,19 @@ jobs:
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ steps.strings.outputs.source-dir }}
 
+    - name: ccache show stats before
+      run: ccache --show-stats
+
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: |
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
+    - name: ccache show stats after
+      run: ccache --show-stats
+      
     # - name: Test
     #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
     #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
