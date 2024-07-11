@@ -28,6 +28,12 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR})
 For more information on find package modules see:
 https://cmake.org/cmake/help/latest/command/find_package.html
 
+Adding following line after `project()` will try to enable use of compiler cache:
+
+```cmake
+find_package(ccache)
+```
+
 As of time of writing `ccache` does not yet support MSVC `/Zi` flag and requires `/Z7` instead. If possible, it is advised to switch `CMP0141` to `NEW` and set `CMAKE_MSVC_DEBUG_INFORMATION_FORMAT` to `Embedded` in the root `CMakeLists.txt` before first `project()` or `enable_language()` call. If `CMP0141` is set to `OLD`, this script will try the old way of switching debug information format by manipulating `CMAKE_<lang>_FLAGS_<config>`, which is known to be unreliable in some cases.
 
 ```cmake

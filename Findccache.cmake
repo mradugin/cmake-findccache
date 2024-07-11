@@ -20,6 +20,11 @@ See example project.
 For more information on find package modules see:
 https://cmake.org/cmake/help/latest/command/find_package.html
 
+Adding following line after ``project()`` will try to enable use of compiler 
+cache::
+
+  find_package(ccache)
+
 As of time of writing ccache does not yet support MSVC /Zi flag and requires 
 /Z7 instead. If possible, it is advised to switch CMP0141 to NEW and set 
 CMAKE_MSVC_DEBUG_INFORMATION_FORMAT to ``Embedded`` in the root CMakeLists.txt 
@@ -38,10 +43,6 @@ This module will look only for ``ccache`` program by default, force override
 cache programs::
 
   set(CCACHE_PROGRAMS "sccache;buildcache;ccache" CACHE STRING _ FORCE)
-
-Adding following line after project() will enable use of compiler cache::
-
-  find_package(ccache REQUIRED)
 
 The following variables are provided to indicate compiler cache support:
 
