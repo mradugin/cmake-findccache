@@ -48,7 +48,7 @@ jobs:
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2
-      wuth:
+      with:
         restore: false
   
     - name: Set reusable strings
