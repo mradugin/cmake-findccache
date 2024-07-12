@@ -58,6 +58,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1.2.13
       with:
         restore: false
+        save: false
         verbose: 2
   
     - name: Set reusable strings
@@ -87,6 +88,7 @@ jobs:
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
+        cmake --version
         D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
