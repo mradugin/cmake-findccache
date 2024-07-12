@@ -16,33 +16,40 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest]
         build_type: [Debug]
-        c_compiler: [gcc, clang, cl]
+        c_compiler: [cl]
         include:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-          - os: macos-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
-          - os: macos-latest
-            c_compiler: gcc
-          - os: macos-latest
-            c_compiler: cl
+        # os: [ubuntu-latest, windows-latest, macos-latest]
+        # build_type: [Debug]
+        # c_compiler: [gcc, clang, cl]
+        # include:
+        #   - os: windows-latest
+        #     c_compiler: cl
+        #     cpp_compiler: cl
+        #   - os: ubuntu-latest
+        #     c_compiler: gcc
+        #     cpp_compiler: g++
+        #   - os: ubuntu-latest
+        #     c_compiler: clang
+        #     cpp_compiler: clang++
+        #   - os: macos-latest
+        #     c_compiler: clang
+        #     cpp_compiler: clang++
+        # exclude:
+        #   - os: windows-latest
+        #     c_compiler: gcc
+        #   - os: windows-latest
+        #     c_compiler: clang
+        #   - os: ubuntu-latest
+        #     c_compiler: cl
+        #   - os: macos-latest
+        #     c_compiler: gcc
+        #   - os: macos-latest
+        #     c_compiler: cl
             
     steps:
     - uses: actions/checkout@v4
@@ -79,10 +86,13 @@ jobs:
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
+        D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean --verbose
+        D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
+        D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         ccache --show-stats
 
     - name: ccache show stats after
