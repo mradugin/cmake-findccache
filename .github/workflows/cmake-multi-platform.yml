@@ -89,14 +89,12 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
         cmake --version
-        D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
         ccache -z
+        ccache --show-stats
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean --verbose
-        D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
-        D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         ccache --show-stats
 
     - name: ccache show stats after
