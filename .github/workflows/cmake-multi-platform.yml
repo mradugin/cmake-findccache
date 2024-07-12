@@ -92,6 +92,7 @@ jobs:
         D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
+        ccache -z
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean --verbose
         D:\a\cmake-findccache\cmake-findccache\build\cl.exe --version
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
