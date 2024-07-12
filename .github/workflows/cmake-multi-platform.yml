@@ -58,6 +58,7 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1.2.13
       with:
         restore: false
+        verbose: 2
   
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
