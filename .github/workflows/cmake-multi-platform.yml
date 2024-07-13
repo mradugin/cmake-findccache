@@ -72,13 +72,13 @@ jobs:
         variant: ccache
   
     - name: Install ninja (ubuntu)
-      if: matrix.os == 'ubuntu-latest' && matrix.generator = 'Ninja'
+      if: matrix.os == 'ubuntu-latest' && matrix.generator == 'Ninja'
       run: |
         apt update
         apt -y install ninja
 
     - name: Install ninja (macos)
-      if: matrix.os == 'macos-latest' && matrix.generator = 'Ninja'
+      if: matrix.os == 'macos-latest' && matrix.generator == 'Ninja'
       run: |
         brew install ninja
 
