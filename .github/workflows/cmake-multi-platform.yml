@@ -74,6 +74,7 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       shell: bash
       run: |
+        ccache -C
         ls -al "C:\Users\runneradmin\.cargo\bin\ccache.exe"
         ccache --version
         cmake --version
@@ -85,6 +86,7 @@ jobs:
       shell: bash
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
+        ccache -C
         ls -al "D:\a\cmake-findccache\cmake-findccache\build\cl.exe"
         ls -al "C:\Users\runneradmin\.cargo\bin\ccache.exe"
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
