@@ -83,7 +83,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.generator == 'Ninja'
       run: |
         sudo apt update
-        sudo apt -y install ninja
+        sudo apt -y install ninja-build
 
     - name: Install ninja (macos)
       if: matrix.os == 'macos-latest' && matrix.generator == 'Ninja'
