@@ -94,7 +94,7 @@ jobs:
       if: matrix.os == 'windows-latest' && matrix.generator == 'Ninja'
       uses: msys2/setup-msys2@v2
       with:
-        msystem: ${{matrix.sys}}
+        msystem: mingw64
         update: true
         install: >-
           git
