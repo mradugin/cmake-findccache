@@ -27,6 +27,7 @@ jobs:
         #build_type: [Debug]
         #c_compiler: [gcc, clang, cl]
         #generator: [Ninja, Visual Studio 2022, Unix Makefiles, Xcode]
+        build_type: [Debug]
         include:
           - os: windows-latest
             c_compiler: cl
