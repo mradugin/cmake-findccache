@@ -76,7 +76,7 @@ jobs:
       run: |
         ccache --version
         cmake --version
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}" -S "${{ steps.strings.outputs.source-dir }}" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "Visual Studio 17 2022"
         ccache --show-stats
 
     - name: Build1
