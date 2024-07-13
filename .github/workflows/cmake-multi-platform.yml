@@ -71,6 +71,17 @@ jobs:
         verbose: 2
         variant: ccache
   
+    - name: Install ninja (ubuntu)
+      if: matrix.os == 'ubuntu-latest' && matrix.generator = 'Ninja'
+      run: |
+        apt update
+        apt -y install ninja
+
+    - name: Install ninja (macos)
+      if: matrix.os == 'macos-latest' && matrix.generator = 'Ninja'
+      run: |
+        brew install ninja
+
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
