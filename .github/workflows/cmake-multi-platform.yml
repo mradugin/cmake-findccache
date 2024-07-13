@@ -76,11 +76,8 @@ jobs:
       run: |
         ccache --version
         cmake --version
-        cmake -B "${{ steps.strings.outputs.build-output-dir }}" -S "${{ steps.strings.outputs.source-dir }}" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        cmake -B "${{ steps.strings.outputs.build-output-dir }}" -S "${{ steps.strings.outputs.source-dir }}" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         ccache --show-stats
-      # 
-      # -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-      # -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
 
     - name: Build1
       shell: bash
