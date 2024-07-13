@@ -16,41 +16,61 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [windows-2019]
-        build_type: [Debug]
-        c_compiler: [cl]
-        include:
-          - os: windows-2019
-            c_compiler: cl
-            cpp_compiler: cl
-        # os: [ubuntu-latest, windows-latest, macos-latest]
+        # os: [windows-2019]
         # build_type: [Debug]
-        # c_compiler: [gcc, clang, cl]
+        # c_compiler: [cl]
         # include:
-        #   - os: windows-latest
+        #   - os: windows-2019
         #     c_compiler: cl
         #     cpp_compiler: cl
-        #   - os: ubuntu-latest
-        #     c_compiler: gcc
-        #     cpp_compiler: g++
-        #   - os: ubuntu-latest
-        #     c_compiler: clang
-        #     cpp_compiler: clang++
-        #   - os: macos-latest
-        #     c_compiler: clang
-        #     cpp_compiler: clang++
-        # exclude:
-        #   - os: windows-latest
-        #     c_compiler: gcc
-        #   - os: windows-latest
-        #     c_compiler: clang
-        #   - os: ubuntu-latest
-        #     c_compiler: cl
-        #   - os: macos-latest
-        #     c_compiler: gcc
-        #   - os: macos-latest
-        #     c_compiler: cl
-            
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        build_type: [Debug]
+        c_compiler: [gcc, clang, cl]
+        generator: [Ninja, Visual Studio 2022, Unix Makefiles, Xcode]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            generator: Visual Studio 2022
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+            generator: Ninja
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            generator: Ninja
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+            generator: Unix Makefiles
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            generator: Ninja
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            generator: Unix Makefiles
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            generator: Ninja
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            generator: Xcode
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+          - os: macos-latest
+            c_compiler: gcc
+          - os: macos-latest
+            c_compiler: cl            
     steps:
     - uses: actions/checkout@v4
 
