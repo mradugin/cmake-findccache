@@ -96,6 +96,7 @@ if (CCACHE_FOUND)
             "CLToolExe=cl.exe"
             "CLToolPath=${CMAKE_BINARY_DIR}"
             "UseMultiToolTask=true"
+            "UseStructuredOutput=false"
         )
     elseif(CMAKE_GENERATOR MATCHES "Ninja" OR CMAKE_GENERATOR MATCHES "Unix Makefiles")
         # Support Unix Makefiles and Ninja
