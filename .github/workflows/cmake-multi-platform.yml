@@ -112,10 +112,19 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "source-dir=${{ github.workspace }}/example" >> "$GITHUB_OUTPUT"
 
+    - name: Configure CMake (MSYS2)
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      if: ${{ matrix.os == 'windows-latest' && matrix.generator == 'Ninja' }}
+      shell: ${{ matrix.os == 'windows-latest' && matrix.generator == 'Ninja' && 'msys2 {0}' || 'bash' }}
+      run: |
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.generator}}"
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      shell: ${{ matrix.os == 'windows-latest' && matrix.generator == 'Ninja' && 'msys2 {0}' || 'bash' }}
+      if: ${{ matrix.os != 'windows-latest' || matrix.generator != 'Ninja' }}
+      shell: bash
       run: |
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.generator}}"
 
