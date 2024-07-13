@@ -74,12 +74,12 @@ jobs:
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       shell: bash
       run: |
-        ls -al "D:\a\cmake-findccache\cmake-findccache\build\cl.exe"
         ls -al "C:\Users\runneradmin\.cargo\bin\ccache.exe"
         ccache --version
         cmake --version
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "Visual Studio 17 2022"
         ccache --show-stats
+        ls -al "D:\a\cmake-findccache\cmake-findccache\build\cl.exe"
 
     - name: Build1
       shell: bash
