@@ -29,44 +29,44 @@ jobs:
         #generator: [Ninja, Visual Studio 2022, Unix Makefiles, Xcode]
         include:
           - os: windows-latest
+            generator: Visual Studio 17 2022
             c_compiler: cl
             cpp_compiler: cl
-            generator: Visual Studio 2022
             build_type: Debug
           - os: windows-latest
+            generator: Ninja
             c_compiler: cl
             cpp_compiler: cl
-            generator: Ninja
             build_type: Debug
           - os: ubuntu-latest
+            generator: Ninja
             c_compiler: gcc
             cpp_compiler: g++
-            generator: Ninja
             build_type: Debug
           - os: ubuntu-latest
+            generator: Unix Makefiles
             c_compiler: gcc
             cpp_compiler: g++
-            generator: Unix Makefiles
             build_type: Debug
           - os: ubuntu-latest
+            generator: Ninja
             c_compiler: clang
             cpp_compiler: clang++
-            generator: Ninja
             build_type: Debug
           - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
             generator: Unix Makefiles
-            build_type: Debug
-          - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
+            build_type: Debug
+          - os: macos-latest
             generator: Ninja
-            build_type: Debug
-          - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
+            build_type: Debug
+          - os: macos-latest
             generator: Xcode
+            c_compiler: clang
+            cpp_compiler: clang++
             build_type: Debug
     steps:
     - uses: actions/checkout@v4
@@ -116,7 +116,7 @@ jobs:
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --target clean --verbose
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
-        
+
     # - name: Test
     #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
     #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
