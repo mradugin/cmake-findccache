@@ -69,37 +69,30 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "source-dir=${{ github.workspace }}/example" >> "$GITHUB_OUTPUT"
 
-    - name: ccache show stats before
-      run: ccache --show-stats
-
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -S ${{ steps.strings.outputs.source-dir }}
+      run: |
+        ccache --show-stats
+        cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ steps.strings.outputs.source-dir }}
+        ccache --show-stats
       # -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
       # -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
       # -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
 
-    - name: ccache show stats after config
-      run: ccache --show-stats
+    - name: Build1
+      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      run: |
+        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
+        ccache --show-stats
 
     - name: Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
-        cmake --version
-        cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
-        ccache --show-stats
-        ccache -z
-        ccache --show-stats
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target clean --verbose
         cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
 
-    - name: ccache show stats after
-      run: ccache --show-stats
-      
     # - name: Test
     #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
     #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
