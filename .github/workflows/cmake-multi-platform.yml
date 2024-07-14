@@ -12,12 +12,12 @@ jobs:
     runs-on: ${{ matrix.sys.os }}
 
     strategy:
-      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
 
       matrix:
         sys:
-          - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja          }
+          # Compilation failes with the following error: ccache: error: Could not find compiler "D:\a\_temp\msys64\clang64\bin\clang++.exe" in PATH
+          # - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja          }
           - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles }
 
           - { os: ubuntu-latest,  shell: bash,        generator: Ninja          }
@@ -32,6 +32,10 @@ jobs:
         build_type: [Debug]
 
         include:
+          # Behaves weird on github runner, either because of Windows Server, VS Enterprise, or sources being on D:\ drive, i.e.
+          # Objects from first build get into cache, but second build compiler calls do not get into hits or miss statistics, while
+          # it can be seen that ccache is being called. On the other hand this configuration has been tested on multiple machines
+          # with Windows 10 Pro, VS Community edition and source stored on C:\ drive.
           - sys: { os: windows-latest, shell: bash, generator: Visual Studio 17 2022 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
@@ -72,7 +76,6 @@ jobs:
         msystem: ${{ matrix.compiler.msys }}
         update: true
         install: >-
-          git
           make
           ccache
         pacboy: >-
@@ -81,33 +84,22 @@ jobs:
           ninja:p
 
     - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "source-dir=${{ github.workspace }}/example" >> "$GITHUB_OUTPUT"
 
     - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: |
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.sys.generator}}"
 
     - name: Build (empty cache)
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
 
     - name: Build (cached)
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --target clean --verbose
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
-
-    # - name: Test
-    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
-    #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-    #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-    #   run: ctest --build-config ${{ matrix.build_type }}
