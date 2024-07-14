@@ -16,58 +16,31 @@ jobs:
       fail-fast: false
 
       matrix:
-        # os: [windows-2019]
-        # build_type: [Debug]
-        # c_compiler: [cl]
-        # include:
-        #   - os: windows-2019
-        #     c_compiler: cl
-        #     cpp_compiler: cl
-        #os: [ubuntu-latest, windows-latest, macos-latest]
-        #build_type: [Debug]
-        #c_compiler: [gcc, clang, cl]
-        #generator: [Ninja, Visual Studio 2022, Unix Makefiles, Xcode]
+        sys:
+          - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja }
+          - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles }
+
+          - { os: ubuntu-latest,  shell: bash,        generator: Ninja }
+          - { os: ubuntu-latest,  shell: bash,        generator: Unix Makefiles }
+
+          - { os: macos-latest,   shell: bash,        generator: Ninja }
+          - { os: macos-latest,   shell: bash,        generator: Unix Makefiles }
+
+        compiler:
+          - { c: gcc, cpp: g++ }
+          - { c: clang, cpp: clang++ }
+        build_type: [Debug]
+
         include:
-          - os: windows-latest
-            generator: Visual Studio 17 2022
-            c_compiler: cl
-            cpp_compiler: cl
-            build_type: Debug
-          - os: windows-latest
-            generator: Ninja
-            c_compiler: gcc
-            cpp_compiler: g++
-            build_type: Debug
-          - os: ubuntu-latest
-            generator: Ninja
-            c_compiler: gcc
-            cpp_compiler: g++
-            build_type: Debug
-          - os: ubuntu-latest
-            generator: Unix Makefiles
-            c_compiler: gcc
-            cpp_compiler: g++
-            build_type: Debug
-          - os: ubuntu-latest
-            generator: Ninja
-            c_compiler: clang
-            cpp_compiler: clang++
-            build_type: Debug
-          - os: ubuntu-latest
-            generator: Unix Makefiles
-            c_compiler: clang
-            cpp_compiler: clang++
-            build_type: Debug
-          - os: macos-latest
-            generator: Ninja
-            c_compiler: clang
-            cpp_compiler: clang++
-            build_type: Debug
-          - os: macos-latest
-            generator: Xcode
-            c_compiler: clang
-            cpp_compiler: clang++
-            build_type: Debug
+          - sys: { os: windows-latest, shell: bash,        generator: Visual Studio 2022 }
+            compiler: { c: cl, cpp: cl }
+          - sys: { os: macos-latest,   shell: bash,        generator: Xcode }
+            compiler: { c: clang, cpp: clang++ }
+
+    defaults:
+      run:
+        shell: ${{ matrix.sys.shell }}
+
     steps:
     - uses: actions/checkout@v4
 
@@ -80,18 +53,18 @@ jobs:
         variant: ccache
   
     - name: Install ninja (ubuntu)
-      if: matrix.os == 'ubuntu-latest' && matrix.generator == 'Ninja'
+      if: ${{ matrix.sys.os == 'ubuntu-latest' && matrix.sys.generator == 'Ninja' }}
       run: |
         sudo apt update
         sudo apt -y install ninja-build
 
     - name: Install ninja (macos)
-      if: matrix.os == 'macos-latest' && matrix.generator == 'Ninja'
+      if: ${{ matrix.sys.os == 'macos-latest' && matrix.sys.generator == 'Ninja' }}
       run: |
         brew install ninja
 
     - name: Install MSYS2 (windows)
-      if: matrix.os == 'windows-latest' && matrix.generator == 'Ninja'
+      if: ${{ matrix.sys.shell == 'msys2 {0}' }}
       uses: msys2/setup-msys2@v2
       with:
         msystem: mingw64
@@ -107,24 +80,13 @@ jobs:
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
-      shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
         echo "source-dir=${{ github.workspace }}/example" >> "$GITHUB_OUTPUT"
 
-    - name: Configure CMake (MSYS2)
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      if: ${{ matrix.os == 'windows-latest' && matrix.generator == 'Ninja' }}
-      shell: msys2 {0}
-      run: |
-        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.generator}}"
-
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      if: ${{ matrix.os != 'windows-latest' || matrix.generator != 'Ninja' }}
-      shell: bash
       run: |
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.generator}}"
 
