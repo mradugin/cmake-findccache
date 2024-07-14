@@ -75,6 +75,7 @@ jobs:
           git
           make
           ccache
+          clang
         pacboy: >-
           toolchain:p
           cmake:p
