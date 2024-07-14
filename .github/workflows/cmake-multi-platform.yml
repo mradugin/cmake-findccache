@@ -27,8 +27,8 @@ jobs:
           - { os: macos-latest,   shell: bash,        generator: Unix Makefiles }
 
         compiler:
-          - { c: gcc, cpp: g++ }
-          - { c: clang, cpp: clang++ }
+          - { c: gcc,   cpp: g++,     msys: mingw64 }
+          - { c: clang, cpp: clang++, msys: clang64 }
         build_type: [Debug]
 
         include:
@@ -69,13 +69,12 @@ jobs:
       if: ${{ matrix.sys.shell == 'msys2 {0}' }}
       uses: msys2/setup-msys2@v2
       with:
-        msystem: mingw64
+        msystem: ${{ matrix.compiler.msys }}
         update: true
         install: >-
           git
           make
           ccache
-          clang
         pacboy: >-
           toolchain:p
           cmake:p
