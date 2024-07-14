@@ -17,13 +17,13 @@ jobs:
 
       matrix:
         sys:
-          - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja }
+          - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja          }
           - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles }
 
-          - { os: ubuntu-latest,  shell: bash,        generator: Ninja }
+          - { os: ubuntu-latest,  shell: bash,        generator: Ninja          }
           - { os: ubuntu-latest,  shell: bash,        generator: Unix Makefiles }
 
-          - { os: macos-latest,   shell: bash,        generator: Ninja }
+          - { os: macos-latest,   shell: bash,        generator: Ninja          }
           - { os: macos-latest,   shell: bash,        generator: Unix Makefiles }
 
         compiler:
@@ -32,10 +32,10 @@ jobs:
         build_type: [Debug]
 
         include:
-          - sys: { os: windows-latest, shell: bash,        generator: Visual Studio 17 2022 }
-            compiler: { c: cl, cpp: cl }
+          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 17 2022 }
+            compiler: { c: cl,    cpp: cl      }
             build_type: Debug
-          - sys: { os: macos-latest,   shell: bash,        generator: Xcode }
+          - sys: { os: macos-latest,   shell: bash, generator: Xcode                 }
             compiler: { c: clang, cpp: clang++ }
             build_type: Debug
 
@@ -93,7 +93,7 @@ jobs:
       run: |
         cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.sys.generator}}"
 
-    - name: Build (no cache)
+    - name: Build (empty cache)
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: |
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
