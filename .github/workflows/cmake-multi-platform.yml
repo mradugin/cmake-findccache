@@ -32,7 +32,7 @@ jobs:
         build_type: [Debug]
 
         include:
-          - sys: { os: windows-latest, shell: bash,        generator: Visual Studio 2022 }
+          - sys: { os: windows-latest, shell: bash,        generator: Visual Studio 17 2022 }
             compiler: { c: cl, cpp: cl }
           - sys: { os: macos-latest,   shell: bash,        generator: Xcode }
             compiler: { c: clang, cpp: clang++ }
@@ -72,6 +72,7 @@ jobs:
         install: >-
           git
           make
+          ccache
         pacboy: >-
           toolchain:p
           cmake:p
