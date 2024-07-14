@@ -13,4 +13,4 @@ set(CCACHE_PROGRAMS "ccache;sccache;buildcache" CACHE STRING _ FORCE)
 
 find_package(ccache)
 
-add_executable(${PROJECT_NAME} main.cpp)
+add_executable(${PROJECT_NAME} main.cpp module.cpp)

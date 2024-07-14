@@ -1,0 +1,104 @@
+
+name: CMake with ccache on multiple platforms and compilers
+
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.sys.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        sys:
+          # Compilation failes with the following error: ccache: error: Could not find compiler "D:\a\_temp\msys64\clang64\bin\clang++.exe" in PATH
+          # - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja          }
+          - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles }
+
+          - { os: ubuntu-latest,  shell: bash,        generator: Ninja          }
+          - { os: ubuntu-latest,  shell: bash,        generator: Unix Makefiles }
+
+          - { os: macos-latest,   shell: bash,        generator: Ninja          }
+          - { os: macos-latest,   shell: bash,        generator: Unix Makefiles }
+
+        compiler:
+          - { c: gcc,   cpp: g++,     msys: mingw64 }
+          - { c: clang, cpp: clang++, msys: clang64 }
+        build_type: [Debug]
+
+        include:
+          # Behaves weird on github runner, either because of Windows Server, VS Enterprise, or sources being on D:\ drive, i.e.
+          # Objects from first build get into cache, but second build compiler calls do not get into hits or miss statistics, while
+          # it can be seen that ccache is being called. On the other hand this configuration has been tested on multiple machines
+          # with Windows 10 Pro, VS Community edition and source stored on C:\ drive.
+          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 17 2022 }
+            compiler: { c: cl,    cpp: cl      }
+            build_type: Debug
+          - sys: { os: macos-latest,   shell: bash, generator: Xcode                 }
+            compiler: { c: clang, cpp: clang++ }
+            build_type: Debug
+
+    defaults:
+      run:
+        shell: ${{ matrix.sys.shell }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2.13
+      with:
+        restore: false
+        save: false
+        verbose: 2
+        variant: ccache
+  
+    - name: Install ninja (ubuntu)
+      if: ${{ matrix.sys.os == 'ubuntu-latest' && matrix.sys.generator == 'Ninja' }}
+      run: |
+        sudo apt update
+        sudo apt -y install ninja-build
+
+    - name: Install ninja (macos)
+      if: ${{ matrix.sys.os == 'macos-latest' && matrix.sys.generator == 'Ninja' }}
+      run: |
+        brew install ninja
+
+    - name: Install MSYS2 (windows)
+      if: ${{ matrix.sys.shell == 'msys2 {0}' }}
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.compiler.msys }}
+        update: true
+        install: >-
+          make
+          ccache
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          ninja:p
+
+    - name: Set reusable strings
+      id: strings
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        echo "source-dir=${{ github.workspace }}/example" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: |
+        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.sys.generator}}"
+
+    - name: Build (empty cache)
+      run: |
+        cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
+        ccache --show-stats
+
+    - name: Build (cached)
+      run: |
+        cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --target clean --verbose
+        cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
+        ccache --show-stats
