@@ -78,26 +78,18 @@ if (CCACHE_FOUND)
     if (CMAKE_GENERATOR STREQUAL "Xcode")
         set(c_launcher_file "#!/bin/sh\nexec \"${CCACHE_PROGRAM}\" \"${CMAKE_C_COMPILER}\" \"$@\"\n")
         set(cxx_launcher_file "#!/bin/sh\nexec \"${CCACHE_PROGRAM}\" \"${CMAKE_CXX_COMPILER}\" \"$@\"\n")
-        set(objc_launcher_file "#!/bin/sh\nexec \"${CCACHE_PROGRAM}\" \"${CMAKE_OBJC_COMPILER}\" \"$@\"\n")
-        set(objcxx_launcher_file "#!/bin/sh\nexec \"${CCACHE_PROGRAM}\" \"${CMAKE_OBJCXX_COMPILER}\" \"$@\"\n")
         file(CONFIGURE OUTPUT ${CMAKE_BINARY_DIR}/launch-c CONTENT "${c_launcher_file}")
         file(CONFIGURE OUTPUT ${CMAKE_BINARY_DIR}/launch-cxx CONTENT "${cxx_launcher_file}")
-        file(CONFIGURE OUTPUT ${CMAKE_BINARY_DIR}/launch-objc CONTENT "${objc_launcher_file}")
-        file(CONFIGURE OUTPUT ${CMAKE_BINARY_DIR}/launch-objcxx CONTENT "${objcxx_launcher_file}")
         execute_process(COMMAND chmod a+rx
             "${CMAKE_BINARY_DIR}/launch-c"
             "${CMAKE_BINARY_DIR}/launch-cxx"
-            "${CMAKE_BINARY_DIR}/launch-objc"
-            "${CMAKE_BINARY_DIR}/launch-objcxx"
         )
 
         # Set Xcode project attributes to route compilation and linking through our scripts
-        set(CMAKE_XCODE_ATTRIBUTE_CC         "${CMAKE_BINARY_DIR}/launch-c"      CACHE INTERNAL _)
-        set(CMAKE_XCODE_ATTRIBUTE_CXX        "${CMAKE_BINARY_DIR}/launch-cxx"    CACHE INTERNAL _)
-        set(CMAKE_XCODE_ATTRIBUTE_OBJC       "${CMAKE_BINARY_DIR}/launch-objc"   CACHE INTERNAL _)
-        set(CMAKE_XCODE_ATTRIBUTE_OBJCXX     "${CMAKE_BINARY_DIR}/launch-objcxx" CACHE INTERNAL _)
-        set(CMAKE_XCODE_ATTRIBUTE_LD         "${CMAKE_BINARY_DIR}/launch-c"      CACHE INTERNAL _)
-        set(CMAKE_XCODE_ATTRIBUTE_LDPLUSPLUS "${CMAKE_BINARY_DIR}/launch-cxx"    CACHE INTERNAL _)
+        set(CMAKE_XCODE_ATTRIBUTE_CC         "${CMAKE_BINARY_DIR}/launch-c"   CACHE INTERNAL _)
+        set(CMAKE_XCODE_ATTRIBUTE_CXX        "${CMAKE_BINARY_DIR}/launch-cxx" CACHE INTERNAL _)
+        set(CMAKE_XCODE_ATTRIBUTE_LD         "${CMAKE_BINARY_DIR}/launch-c"   CACHE INTERNAL _)
+        set(CMAKE_XCODE_ATTRIBUTE_LDPLUSPLUS "${CMAKE_BINARY_DIR}/launch-cxx" CACHE INTERNAL _)
     elseif (CMAKE_GENERATOR MATCHES "Visual Studio")
         # Compiler executable name selected by toolset: cl.exe (MSVC) or clang-cl.exe (ClangCL toolset)
         if (CMAKE_CXX_COMPILER)
@@ -186,13 +178,10 @@ if (CCACHE_FOUND)
         endif()
     elseif(CMAKE_GENERATOR MATCHES "Ninja" OR CMAKE_GENERATOR MATCHES "Unix Makefiles")
         # Support Unix Makefiles and Ninja
-        set(CMAKE_C_COMPILER_LAUNCHER   "${CCACHE_PROGRAM}")
-        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-
-        if (APPLE)
-            set(CMAKE_OBJC_COMPILER_LAUNCHER   "${CCACHE_PROGRAM}")
-            set(CMAKE_OBJCXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-        endif()
+        set(CMAKE_C_COMPILER_LAUNCHER      "${CCACHE_PROGRAM}")
+        set(CMAKE_CXX_COMPILER_LAUNCHER    "${CCACHE_PROGRAM}")
+        set(CMAKE_OBJC_COMPILER_LAUNCHER   "${CCACHE_PROGRAM}")
+        set(CMAKE_OBJCXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
     else()
         message(WARNING "Unsupported generator for compiler cache: ${CMAKE_GENERATOR}")
         set(CCACHE_SUPPORTED NO)
