@@ -38,6 +38,9 @@ jobs:
           - sys: { os: windows-2022,   shell: bash, generator: Visual Studio 17 2022 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
+          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 18 2026 }
+            compiler: { c: cl,    cpp: cl      }
+            build_type: Debug
           - sys: { os: macos-latest,   shell: bash, generator: Xcode                 }
             compiler: { c: clang, cpp: clang++ }
             build_type: Debug
