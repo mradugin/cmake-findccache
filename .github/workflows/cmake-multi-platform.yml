@@ -35,7 +35,10 @@ jobs:
           # Objects from first build get into cache, but second build compiler calls do not get into hits or miss statistics, while
           # it can be seen that ccache is being called. On the other hand this configuration has been tested on multiple machines
           # with Windows 10 Pro, VS Community edition and source stored on C:\ drive.
-          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 17 2022 }
+          - sys: { os: windows-2022,   shell: bash, generator: Visual Studio 17 2022 }
+            compiler: { c: cl,    cpp: cl      }
+            build_type: Debug
+          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 18 2026 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
           - sys: { os: macos-latest,   shell: bash, generator: Xcode                 }
@@ -47,7 +50,7 @@ jobs:
         shell: ${{ matrix.sys.shell }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@v1.2.13
