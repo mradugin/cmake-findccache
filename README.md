@@ -50,6 +50,10 @@ find_package(ccache REQUIRED)
 
 For the complete example see [CMakeLists.txt](example/CMakeLists.txt)
 
+## Visual Studio and ccache cache location
+
+MSBuild file tracking treats files written by the compiler process (and therefore by `ccache`) as build outputs and deletes them on Clean/Rebuild, unless they are located within `%LOCALAPPDATA%`, `%APPDATA%` or `%TEMP%`. Keep the `ccache` cache directory in one of these locations (the default `%LOCALAPPDATA%\ccache` is fine), otherwise the cache will be wiped on every Clean/Rebuild. This module warns during configuration if the cache directory is located elsewhere. See also [ccache discussion #1355](https://github.com/ccache/ccache/discussions/1355).
+
 # ccache Setup
 
 ## On Windows

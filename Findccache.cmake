@@ -38,6 +38,11 @@ to be unreliable in some cases::
 
   project(...)
 
+For Visual Studio generators, keep the ccache cache directory within
+``%LOCALAPPDATA%``, ``%APPDATA%`` or ``%TEMP%``, otherwise MSBuild file tracking
+treats cached files as build outputs and deletes them on Clean/Rebuild. This
+module warns if the cache directory is located elsewhere.
+
 This module will look only for ``ccache`` program by default, force override 
 ``CCACHE_PROGRAMS`` cache variable to look for for alternative compiler
 cache programs::
@@ -98,6 +103,55 @@ if (CCACHE_FOUND)
             "UseMultiToolTask=true"
             "UseStructuredOutput=false"
         )
+
+        # MSBuild file tracking records files written by the compiler process tree as build outputs
+        # and deletes them on Clean/Rebuild, which wipes the compiler cache. Only a few locations,
+        # such as %LOCALAPPDATA%, %APPDATA% and %TEMP%, are excluded from tracking. Disabling tracking
+        # (TrackFileAccess=false) avoids that, but makes every build invoke the compiler for every
+        # source file, so instead warn if the cache directory is in a tracked location.
+        get_filename_component(ccache_program_name "${CCACHE_PROGRAM}" NAME_WE)
+        if (ccache_program_name STREQUAL "ccache")
+            execute_process(COMMAND "${CCACHE_PROGRAM}" --get-config cache_dir
+                OUTPUT_VARIABLE ccache_cache_dir
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                RESULT_VARIABLE ccache_result
+                ERROR_QUIET
+            )
+            if (ccache_result EQUAL 0 AND ccache_cache_dir)
+                # Normalize path for comparison: resolve short (8.3) names if path exists, ignore case
+                function(_ccache_normalize_path path out_var)
+                    file(TO_CMAKE_PATH "${path}" path)
+                    if (EXISTS "${path}")
+                        file(REAL_PATH "${path}" path)
+                    endif()
+                    string(TOLOWER "${path}" path)
+                    set(${out_var} "${path}" PARENT_SCOPE)
+                endfunction()
+
+                _ccache_normalize_path("${ccache_cache_dir}" cache_dir_normalized)
+                set(ccache_cache_dir_untracked NO)
+                foreach(env_var LOCALAPPDATA APPDATA TEMP TMP)
+                    if (DEFINED ENV{${env_var}} AND NOT "$ENV{${env_var}}" STREQUAL "")
+                        _ccache_normalize_path("$ENV{${env_var}}" untracked_dir)
+                        cmake_path(IS_PREFIX untracked_dir "${cache_dir_normalized}" NORMALIZE is_prefix)
+                        if (is_prefix)
+                            set(ccache_cache_dir_untracked YES)
+                            break()
+                        endif()
+                    endif()
+                endforeach()
+
+                if (NOT ccache_cache_dir_untracked)
+                    message(WARNING
+                        "ccache cache directory \"${ccache_cache_dir}\" is not located within "
+                        "%LOCALAPPDATA%, %APPDATA% or %TEMP%. MSBuild file tracking will treat cached "
+                        "files as build outputs and delete them on Clean/Rebuild, causing cache misses. "
+                        "Move the cache directory (cache_dir setting or CCACHE_DIR environment variable) "
+                        "to one of the above locations, e.g. \"%LOCALAPPDATA%\\ccache\" (ccache default)."
+                    )
+                endif()
+            endif()
+        endif()
     elseif(CMAKE_GENERATOR MATCHES "Ninja" OR CMAKE_GENERATOR MATCHES "Unix Makefiles")
         # Support Unix Makefiles and Ninja
         set(CMAKE_C_COMPILER_LAUNCHER   "${CCACHE_PROGRAM}")
