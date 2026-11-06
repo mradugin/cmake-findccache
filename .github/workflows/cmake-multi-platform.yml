@@ -31,10 +31,6 @@ jobs:
         build_type: [Debug]
 
         include:
-          # Behaves weird on github runner, either because of Windows Server, VS Enterprise, or sources being on D:\ drive, i.e.
-          # Objects from first build get into cache, but second build compiler calls do not get into hits or miss statistics, while
-          # it can be seen that ccache is being called. On the other hand this configuration has been tested on multiple machines
-          # with Windows 10 Pro, VS Community edition and source stored on C:\ drive.
           - sys: { os: windows-2022,   shell: bash, generator: Visual Studio 17 2022 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
@@ -60,6 +56,13 @@ jobs:
         verbose: 2
         variant: ccache
   
+    # MSBuild file tracking deletes files written by the compiler (ccache) on Clean,
+    # unless the cache is within %LOCALAPPDATA%, %APPDATA% or %TEMP%
+    - name: Use untracked ccache directory (Visual Studio)
+      if: ${{ startsWith(matrix.sys.generator, 'Visual Studio') }}
+      run: |
+        echo "CCACHE_DIR=$LOCALAPPDATA\\ccache" >> "$GITHUB_ENV"
+
     - name: Install ninja (ubuntu)
       if: ${{ matrix.sys.os == 'ubuntu-latest' && matrix.sys.generator == 'Ninja' }}
       run: |
@@ -102,6 +105,14 @@ jobs:
 
     - name: Build (cached)
       run: |
+        ccache --zero-stats
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --target clean --verbose
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
+
+    - name: Check cache hits (Visual Studio)
+      if: ${{ startsWith(matrix.sys.generator, 'Visual Studio') }}
+      run: |
+        hits=$(ccache --print-stats | awk '$1 == "direct_cache_hit" || $1 == "preprocessed_cache_hit" { s += $2 } END { print s + 0 }')
+        echo "Cache hits after clean: $hits"
+        test "$hits" -gt 0
