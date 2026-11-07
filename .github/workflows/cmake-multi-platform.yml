@@ -14,16 +14,18 @@ jobs:
       fail-fast: false
 
       matrix:
+        # expected_hits: number of compiler calls expected to be cached, i.e. number of
+        # source files in the example project compiled through ccache
         sys:
           # Compilation failes with the following error: ccache: error: Could not find compiler "D:\a\_temp\msys64\clang64\bin\clang++.exe" in PATH
           # - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja          }
-          - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles }
+          - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles, expected_hits: 2 }
 
-          - { os: ubuntu-latest,  shell: bash,        generator: Ninja          }
-          - { os: ubuntu-latest,  shell: bash,        generator: Unix Makefiles }
+          - { os: ubuntu-latest,  shell: bash,        generator: Ninja,          expected_hits: 2 }
+          - { os: ubuntu-latest,  shell: bash,        generator: Unix Makefiles, expected_hits: 2 }
 
-          - { os: macos-latest,   shell: bash,        generator: Ninja          }
-          - { os: macos-latest,   shell: bash,        generator: Unix Makefiles }
+          - { os: macos-latest,   shell: bash,        generator: Ninja,          expected_hits: 2 }
+          - { os: macos-latest,   shell: bash,        generator: Unix Makefiles, expected_hits: 2 }
 
         compiler:
           - { c: gcc,   cpp: g++,     msys: mingw64 }
@@ -31,13 +33,13 @@ jobs:
         build_type: [Debug]
 
         include:
-          - sys: { os: windows-2022,   shell: bash, generator: Visual Studio 17 2022 }
+          - sys: { os: windows-2022,   shell: bash, generator: Visual Studio 17 2022, expected_hits: 2 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
-          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 18 2026 }
+          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 18 2026, expected_hits: 2 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
-          - sys: { os: macos-latest,   shell: bash, generator: Xcode                 }
+          - sys: { os: macos-latest,   shell: bash, generator: Xcode,                 expected_hits: 2 }
             compiler: { c: clang, cpp: clang++ }
             build_type: Debug
 
@@ -49,7 +51,7 @@ jobs:
     - uses: actions/checkout@v5
 
     - name: ccache
-      uses: hendrikmuhs/ccache-action@v1.2.13
+      uses: hendrikmuhs/ccache-action@v1.2.24
       with:
         restore: false
         save: false
@@ -88,6 +90,13 @@ jobs:
           cmake:p
           ninja:p
 
+    - name: Environment versions
+      run: |
+        echo "cmake:  $(command -v cmake)"
+        cmake --version | head -n 1
+        echo "ccache: $(command -v ccache)"
+        ccache --version | head -n 1
+
     - name: Set reusable strings
       id: strings
       run: |
@@ -100,8 +109,10 @@ jobs:
 
     - name: Build (empty cache)
       run: |
+        ccache --zero-stats
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
+        .github/scripts/check-ccache-stats.sh 0 ${{ matrix.sys.expected_hits }}
 
     - name: Build (cached)
       run: |
@@ -109,10 +120,4 @@ jobs:
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --target clean --verbose
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
-
-    - name: Check cache hits (Visual Studio)
-      if: ${{ startsWith(matrix.sys.generator, 'Visual Studio') }}
-      run: |
-        hits=$(ccache --print-stats | awk '$1 == "direct_cache_hit" || $1 == "preprocessed_cache_hit" { s += $2 } END { print s + 0 }')
-        echo "Cache hits after clean: $hits"
-        test "$hits" -gt 0
+        .github/scripts/check-ccache-stats.sh ${{ matrix.sys.expected_hits }} 0
