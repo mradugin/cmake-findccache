@@ -91,14 +91,24 @@ if (CCACHE_FOUND)
         set(CMAKE_XCODE_ATTRIBUTE_LD         "${CMAKE_BINARY_DIR}/launch-c"   CACHE INTERNAL _)
         set(CMAKE_XCODE_ATTRIBUTE_LDPLUSPLUS "${CMAKE_BINARY_DIR}/launch-cxx" CACHE INTERNAL _)
     elseif (CMAKE_GENERATOR MATCHES "Visual Studio")
-        # Copy original ccache.exe and rename to cl.exe, this way intermediate cmd file is not needed
-        file(COPY_FILE ${CCACHE_PROGRAM} ${CMAKE_BINARY_DIR}/cl.exe ONLY_IF_DIFFERENT)
+        # Compiler executable name selected by toolset: cl.exe (MSVC) or clang-cl.exe (ClangCL toolset)
+        if (CMAKE_CXX_COMPILER)
+            get_filename_component(cl_tool_exe "${CMAKE_CXX_COMPILER}" NAME)
+        elseif (CMAKE_C_COMPILER)
+            get_filename_component(cl_tool_exe "${CMAKE_C_COMPILER}" NAME)
+        else()
+            set(cl_tool_exe "cl.exe")
+        endif()
+
+        # Copy original ccache.exe and rename to compiler executable name, this way intermediate cmd file
+        # is not needed and ccache runs the compiler with the same name found in PATH set up by MSBuild
+        file(COPY_FILE ${CCACHE_PROGRAM} ${CMAKE_BINARY_DIR}/${cl_tool_exe} ONLY_IF_DIFFERENT)
 
         # Set Visual Studio global variables:
-        # - Use above cl.exe (ccache.exe) as a compiler 
+        # - Use above compiler executable (ccache.exe) as a compiler
         # - Enable parallel compilation
         list(APPEND CMAKE_VS_GLOBALS
-            "CLToolExe=cl.exe"
+            "CLToolExe=${cl_tool_exe}"
             "CLToolPath=${CMAKE_BINARY_DIR}"
             "UseMultiToolTask=true"
             "UseStructuredOutput=false"

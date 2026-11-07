@@ -5,7 +5,7 @@ This CMake module finds the `ccache` executable on the system and routes compila
 Following CMake generators are supported:
 - **Xcode**;
 - **Ninja** and **Unix Makefiles**;
-- **Visual Studio** (MSVC and MSBuild), requires ccache version 4.6 or newer, use of `CMAKE_MSVC_DEBUG_INFORMATION_FORMAT` required CMake version 3.25 or newer.
+- **Visual Studio** (MSVC and MSBuild, including `ClangCL` toolset), requires ccache version 4.6 or newer, use of `CMAKE_MSVC_DEBUG_INFORMATION_FORMAT` required CMake version 3.25 or newer.
 
 By default this module will look only for ``ccache`` program, to try [alternative compiler cache programs](#alternative-compile-cache-tools) (not tested), force override ``CCACHE_PROGRAMS`` cache variable. 
 For example, to look for cache programs in the following order of preference `sccache`, `buildcache`, `ccache`, add to `CMakeLists.txt`:
