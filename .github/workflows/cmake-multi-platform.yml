@@ -59,9 +59,6 @@ jobs:
       run:
         shell: ${{ matrix.sys.shell }}
 
-    env:
-      CCACHE_LOGFILE: ${{ github.workspace }}/ccache.log
-
     steps:
     - uses: actions/checkout@v5
 
@@ -154,8 +151,3 @@ jobs:
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
         .github/scripts/check-ccache-stats.sh ${{ matrix.sys.expected_hits }} 0
-
-    - name: Compiler used by ccache (temporary)
-      if: always()
-      run: |
-        grep -hE "Compiler: |Compiler type: " "${{ github.workspace }}/ccache.log" | sed -E 's/^\[[^]]*\] //' | sort -u || true
