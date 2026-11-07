@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: build (${{ matrix.sys.os }}, ${{ matrix.sys.shell }}, ${{ matrix.sys.generator }}${{ matrix.sys.toolset && format(' -T {0}', matrix.sys.toolset) || '' }}, ${{ matrix.compiler.c }}, ${{ matrix.build_type }})
+    name: build (${{ matrix.sys.os }}, ${{ matrix.sys.shell }}, ${{ matrix.sys.generator }}, ${{ matrix.compiler.c }}, ${{ matrix.build_type }})
     runs-on: ${{ matrix.sys.os }}
 
     strategy:
