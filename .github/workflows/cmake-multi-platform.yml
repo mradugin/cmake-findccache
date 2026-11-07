@@ -3,8 +3,10 @@ name: CMake with ccache on multiple platforms and compilers
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
