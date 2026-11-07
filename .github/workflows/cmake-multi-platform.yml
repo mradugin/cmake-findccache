@@ -58,8 +58,9 @@ jobs:
         save: false
         verbose: 2
         variant: ccache
-        # Install even if ccache is already available, e.g. windows-latest image provides an old one with Strawberry Perl
-        install: yes
+        # Always install upstream ccache binary, so the same version is used on all platforms,
+        # even if ccache is already available, e.g. windows-latest provides an old one with Strawberry Perl
+        install: binary
   
     # MSBuild file tracking deletes files written by the compiler (ccache) on Clean,
     # unless the cache is within %LOCALAPPDATA%, %APPDATA% or %TEMP%
