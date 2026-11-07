@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: build (${{ matrix.sys.os }}, ${{ matrix.sys.shell }}, ${{ matrix.sys.generator }}, ${{ matrix.compiler.c }}, ${{ matrix.build_type }})
+    name: build (${{ matrix.sys.os }}, ${{ matrix.sys.shell }}, ${{ matrix.sys.generator }}${{ matrix.sys.toolset && format(' -T {0}', matrix.sys.toolset) || '' }}, ${{ matrix.compiler.c }}, ${{ matrix.build_type }})
     runs-on: ${{ matrix.sys.os }}
 
     strategy:
@@ -44,6 +44,17 @@ jobs:
             compiler: { c: clang, cpp: clang++ }
             build_type: Debug
 
+          # clang-cl
+          - sys: { os: windows-latest, shell: bash, generator: Ninja,                 expected_hits: 2, msvc_env: true }
+            compiler: { c: clang-cl, cpp: clang-cl }
+            build_type: Debug
+          - sys: { os: windows-2022,   shell: bash, generator: Visual Studio 17 2022, expected_hits: 2, toolset: ClangCL }
+            compiler: { c: clang-cl, cpp: clang-cl }
+            build_type: Debug
+          - sys: { os: windows-latest, shell: bash, generator: Visual Studio 18 2026, expected_hits: 2, toolset: ClangCL }
+            compiler: { c: clang-cl, cpp: clang-cl }
+            build_type: Debug
+
     defaults:
       run:
         shell: ${{ matrix.sys.shell }}
@@ -68,6 +79,10 @@ jobs:
       if: ${{ startsWith(matrix.sys.generator, 'Visual Studio') }}
       run: |
         echo "CCACHE_DIR=$LOCALAPPDATA\\ccache" >> "$GITHUB_ENV"
+
+    - name: Set up MSVC developer environment (windows)
+      if: ${{ matrix.sys.msvc_env }}
+      uses: ilammy/msvc-dev-cmd@v1.13.0
 
     - name: Install ninja (ubuntu)
       if: ${{ matrix.sys.os == 'ubuntu-latest' && matrix.sys.generator == 'Ninja' }}
@@ -100,6 +115,10 @@ jobs:
         cmake --version | head -n 1
         echo "ccache: $(command -v ccache)"
         ccache --version | head -n 1
+        if [ "${{ matrix.compiler.c }}" = "clang-cl" ]; then
+          echo "clang-cl: $(command -v clang-cl || echo 'not in PATH')"
+          clang-cl --version 2>/dev/null | head -n 1 || true
+        fi
 
     - name: Set reusable strings
       id: strings
@@ -109,7 +128,14 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }} -DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{matrix.sys.generator}}"
+        args=(-DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -S "${{ steps.strings.outputs.source-dir }}" -B "${{ steps.strings.outputs.build-output-dir }}" -G "${{ matrix.sys.generator }}")
+        if [ -n "${{ matrix.sys.toolset }}" ]; then
+          # Visual Studio generators select compiler via toolset
+          args+=(-T "${{ matrix.sys.toolset }}")
+        else
+          args+=(-DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }})
+        fi
+        cmake "${args[@]}"
 
     - name: Build (empty cache)
       run: |
