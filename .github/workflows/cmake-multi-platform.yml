@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    name: build (${{ matrix.sys.os }}, ${{ matrix.sys.shell }}, ${{ matrix.sys.generator }}, ${{ matrix.compiler.c }}, ${{ matrix.build_type }})
     runs-on: ${{ matrix.sys.os }}
 
     strategy:
@@ -57,6 +58,8 @@ jobs:
         save: false
         verbose: 2
         variant: ccache
+        # Install even if ccache is already available, e.g. windows-latest image provides an old one with Strawberry Perl
+        install: yes
   
     # MSBuild file tracking deletes files written by the compiler (ccache) on Clean,
     # unless the cache is within %LOCALAPPDATA%, %APPDATA% or %TEMP%
