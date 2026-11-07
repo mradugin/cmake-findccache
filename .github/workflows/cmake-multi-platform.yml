@@ -59,6 +59,9 @@ jobs:
       run:
         shell: ${{ matrix.sys.shell }}
 
+    env:
+      CCACHE_LOGFILE: ${{ github.workspace }}/ccache.log
+
     steps:
     - uses: actions/checkout@v5
 
@@ -138,8 +141,6 @@ jobs:
         cmake "${args[@]}"
 
     - name: Build (empty cache)
-      env:
-        CCACHE_LOGFILE: ${{ github.workspace }}/ccache.log
       run: |
         ccache --zero-stats
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
