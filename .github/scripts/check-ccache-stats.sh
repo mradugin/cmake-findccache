@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# Validate ccache statistics collected since the last `ccache --zero-stats`.
-# Usage: check-ccache-stats.sh <expected hits> <expected misses>
+# Validate ccache statistics collected since the last `ccache --zero-stats`
+# and add them to the GitHub job summary.
+# Usage: check-ccache-stats.sh <title> <expected hits> <expected misses>
 set -euo pipefail
 
-expected_hits=$1
-expected_misses=$2
+title=$1
+expected_hits=$2
+expected_misses=$3
 
 stats=$(ccache --print-stats)
 stat() {
@@ -17,7 +19,25 @@ misses=$(stat cache_miss)
 echo "ccache hits:   ${hits} (expected ${expected_hits})"
 echo "ccache misses: ${misses} (expected ${expected_misses})"
 
-if [ "$hits" -ne "$expected_hits" ] || [ "$misses" -ne "$expected_misses" ]; then
+if [ "$hits" -eq "$expected_hits" ] && [ "$misses" -eq "$expected_misses" ]; then
+    result="✅"
+    ok=1
+else
+    result="❌"
+    ok=0
+fi
+
+cat >> "${GITHUB_STEP_SUMMARY:-/dev/null}" <<EOF
+### ${result} ccache: ${title}
+
+| | Actual | Expected |
+|---|---:|---:|
+| Hits | ${hits} | ${expected_hits} |
+| Misses | ${misses} | ${expected_misses} |
+
+EOF
+
+if [ "$ok" -ne 1 ]; then
     echo "::error::Unexpected ccache statistics: ${hits} hits, ${misses} misses (expected ${expected_hits} hits, ${expected_misses} misses)"
     exit 1
 fi

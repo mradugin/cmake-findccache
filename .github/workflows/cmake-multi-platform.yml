@@ -73,6 +73,9 @@ jobs:
         # Always install upstream ccache binary, so the same version is used on all platforms,
         # even if ccache is already available, e.g. windows-latest provides an old one with Strawberry Perl
         install: binary
+        # Disabled: post step reports the action's ccache, not necessarily the one used by the build
+        # (e.g. msys2 jobs use msys2 ccache), see job summary written by the steps below instead
+        job-summary: ''
   
     # MSBuild file tracking deletes files written by the compiler (ccache) on Clean,
     # unless the cache is within %LOCALAPPDATA%, %APPDATA% or %TEMP%
@@ -109,6 +112,7 @@ jobs:
           toolchain:p
           cmake:p
           ninja:p
+          jq:p
 
     - name: Environment versions
       run: |
@@ -132,14 +136,21 @@ jobs:
         else
           args+=(-DCMAKE_C_COMPILER=${{ matrix.compiler.c }} -DCMAKE_CXX_COMPILER=${{ matrix.compiler.cpp }})
         fi
+        # Request toolchains information from CMake File API, used by environment summary
+        mkdir -p "${{ steps.strings.outputs.build-output-dir }}/.cmake/api/v1/query"
+        touch "${{ steps.strings.outputs.build-output-dir }}/.cmake/api/v1/query/toolchains-v1"
         cmake "${args[@]}"
+
+    - name: Environment summary
+      run: |
+        .github/scripts/environment-summary.sh "${{ steps.strings.outputs.build-output-dir }}"
 
     - name: Build (empty cache)
       run: |
         ccache --zero-stats
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
-        .github/scripts/check-ccache-stats.sh 0 ${{ matrix.sys.expected_hits }}
+        .github/scripts/check-ccache-stats.sh "Build (empty cache)" 0 ${{ matrix.sys.expected_hits }}
 
     - name: Build (cached)
       run: |
@@ -147,4 +158,4 @@ jobs:
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --target clean --verbose
         cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --verbose
         ccache --show-stats
-        .github/scripts/check-ccache-stats.sh ${{ matrix.sys.expected_hits }} 0
+        .github/scripts/check-ccache-stats.sh "Build (cached)" ${{ matrix.sys.expected_hits }} 0
