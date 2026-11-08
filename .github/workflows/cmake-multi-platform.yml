@@ -103,7 +103,6 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.compiler.msys }}
-        update: true
         install: >-
           make
           jq
