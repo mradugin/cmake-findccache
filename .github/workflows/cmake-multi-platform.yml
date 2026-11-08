@@ -28,9 +28,10 @@ jobs:
           - { os: macos-latest,   shell: bash,        generator: Ninja,          expected_hits: 2 }
           - { os: macos-latest,   shell: bash,        generator: Unix Makefiles, expected_hits: 2 }
 
+        # msys, msys_pkgs: msys2 environment and compiler packages (pacboy) for msys2 jobs
         compiler:
-          - { c: gcc,   cpp: g++,     msys: mingw64 }
-          - { c: clang, cpp: clang++, msys: clang64 }
+          - { c: gcc,   cpp: g++,     msys: ucrt64,  msys_pkgs: 'gcc:p' }
+          - { c: clang, cpp: clang++, msys: clang64, msys_pkgs: 'clang:p libc++:p' }
         build_type: [Debug]
 
         include:
@@ -108,8 +109,9 @@ jobs:
           jq
         # Native (mingw) ccache: msys ccache does not recognize Windows paths (D:\...)
         # passed by Ninja as absolute and fails to find the compiler
+        # Only compiler packages instead of full toolchain group (gdb, python, ...) to speed up installation
         pacboy: >-
-          toolchain:p
+          ${{ matrix.compiler.msys_pkgs }}
           cmake:p
           ninja:p
           ccache:p
