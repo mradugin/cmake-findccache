@@ -108,11 +108,11 @@ jobs:
         install: >-
           make
           ccache
+          jq
         pacboy: >-
           toolchain:p
           cmake:p
           ninja:p
-          jq:p
 
     - name: Environment versions
       run: |
