@@ -19,8 +19,7 @@ jobs:
         # expected_hits: number of compiler calls expected to be cached, i.e. number of
         # source files in the example project compiled through ccache
         sys:
-          # Compilation failes with the following error: ccache: error: Could not find compiler "D:\a\_temp\msys64\clang64\bin\clang++.exe" in PATH
-          # - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja          }
+          - { os: windows-latest, shell: 'msys2 {0}', generator: Ninja,          expected_hits: 2 }
           - { os: windows-latest, shell: 'msys2 {0}', generator: Unix Makefiles, expected_hits: 2 }
 
           - { os: ubuntu-latest,  shell: bash,        generator: Ninja,          expected_hits: 2 }
@@ -107,12 +106,14 @@ jobs:
         update: true
         install: >-
           make
-          ccache
           jq
+        # Native (mingw) ccache: msys ccache does not recognize Windows paths (D:\...)
+        # passed by Ninja as absolute and fails to find the compiler
         pacboy: >-
           toolchain:p
           cmake:p
           ninja:p
+          ccache:p
 
     - name: Environment versions
       run: |
