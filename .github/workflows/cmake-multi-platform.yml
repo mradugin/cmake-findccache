@@ -25,8 +25,8 @@ jobs:
           - { os: ubuntu-latest,  shell: bash,        generator: Ninja,          expected_hits: 2 }
           - { os: ubuntu-latest,  shell: bash,        generator: Unix Makefiles, expected_hits: 2 }
 
-          - { os: macos-latest,   shell: bash,        generator: Ninja,          expected_hits: 2 }
-          - { os: macos-latest,   shell: bash,        generator: Unix Makefiles, expected_hits: 2 }
+          - { os: macos-latest,   shell: bash,        generator: Ninja,          expected_hits: 4 }
+          - { os: macos-latest,   shell: bash,        generator: Unix Makefiles, expected_hits: 4 }
 
         # msys, msys_pkgs: msys2 environment and compiler packages (pacboy) for msys2 jobs
         compiler:
@@ -41,7 +41,7 @@ jobs:
           - sys: { os: windows-latest, shell: bash, generator: Visual Studio 18 2026, expected_hits: 2 }
             compiler: { c: cl,    cpp: cl      }
             build_type: Debug
-          - sys: { os: macos-latest,   shell: bash, generator: Xcode,                 expected_hits: 2 }
+          - sys: { os: macos-latest,   shell: bash, generator: Xcode,                 expected_hits: 4 }
             compiler: { c: clang, cpp: clang++ }
             build_type: Debug
 
